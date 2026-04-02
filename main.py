@@ -1,32 +1,35 @@
-import webbrowser
-import threading
+import requests
+import re
 import time
 
+session = requests.Session()
+base_url = "https://zefoy.com/"
+
+def get_token():
+    r = session.get(base_url)
+    token = re.findall(r'name="token" value="(.*?)"', r.text)
+    if token:
+        return token[0]
+    return None
+
+def send_views(link):
+    token = get_token()
+    if not token:
+        print("Token not found")
+        return
+
+    data = {
+        "link": link,
+        "token": token
+    }
+
+    r = session.post(base_url, data=data)
+    print("Response:", r.text[:100])
+
 link = input("Enter TikTok link: ")
-views = int(input("Enter number of views: "))
-tabs = int(input("How many tabs at once: "))
+amount = int(input("How many times: "))
 
-def open_video():
-    webbrowser.open(link)
-
-count = 0
-
-while count < views:
-    threads = []
-    
-    for i in range(tabs):
-        t = threading.Thread(target=open_video)
-        t.start()
-        threads.append(t)
-        count += 1
-        
-        if count >= views:
-            break
-
-    for t in threads:
-        t.join()
-
-    print("Views opened:", count)
-    time.sleep(5)
-
-print("Done")
+for i in range(amount):
+    send_views(link)
+    print("Sent:", i+1)
+    time.sleep(30)
