@@ -1,17 +1,32 @@
 import webbrowser
+import threading
 import time
 
-link = input("Enter TikTok video link: ")
+link = input("Enter TikTok link: ")
 views = int(input("Enter number of views: "))
+tabs = int(input("How many tabs at once: "))
+
+def open_video():
+    webbrowser.open(link)
 
 count = 0
 
-print("Starting viewer...")
-
 while count < views:
-    webbrowser.open(link)
-    count += 1
-    print("View", count, "sent")
-    time.sleep(3)
+    threads = []
+    
+    for i in range(tabs):
+        t = threading.Thread(target=open_video)
+        t.start()
+        threads.append(t)
+        count += 1
+        
+        if count >= views:
+            break
 
-print("Done!")
+    for t in threads:
+        t.join()
+
+    print("Views opened:", count)
+    time.sleep(5)
+
+print("Done")
